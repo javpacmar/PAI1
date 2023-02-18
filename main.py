@@ -2,13 +2,18 @@ import datetime
 import hashlib
 import sys
 
+from files import create_files, search_file
+
 def help():
     print("Usage: python main.py <command>")
     print("Commands: create-hash, server")
 
 def create_hash(file):
+    
+    file_path = search_file(file)
+    
     # Open file in read mode
-    with open(file, "r") as f:
+    with open(file_path, "r") as f:
         # Read file
         data = f.read()
         
@@ -19,12 +24,15 @@ def create_hash(file):
         print(f"Hash: {hash}")
         
         #Create hash file
-        with open(f"{file}.hash", "w") as f:
+        with open(f"{file_path}.hash", "w") as f:
             f.write(str(hash))
 
 def check_hash(file):
+    
+    file_path = search_file(file)
+    
     # Open file in read mode
-    with open(file, "r") as f:
+    with open(file_path, "r") as f:
         # Read file
         data = f.read()
         
@@ -32,7 +40,7 @@ def check_hash(file):
         hash = hashlib.sha1(data.encode()).hexdigest()
         
         # Open hash file
-        with open(f"{file}.hash", "r") as f:
+        with open(f"{file_path}.hash", "r") as f:
             # Read hash file
             hash_file = f.read()
             
@@ -45,12 +53,15 @@ def check_hash(file):
                 return False
             
 def create_mac(file, token):
+    
+    file_path = search_file(file)
+    
     # Challenge: Depending on the day of the week, the operation will be different
     today = datetime.datetime.today()
     day = today.weekday()
     
     # Open file in read mode
-    with open(file, "r") as f:
+    with open(file_path, "r") as f:
         # Read file
         data = f.read()
         
@@ -77,7 +88,7 @@ def create_mac(file, token):
         print(f"MAC: {mac}")
         
         # Create mac file
-        with open(f"{file}.mac", "w") as f:
+        with open(f"{file_path}.mac", "w") as f:
             f.write(str(mac))
 
 
@@ -97,6 +108,8 @@ if __name__ == "__main__":
         token = input("Enter token: ")
         if check_hash(file):
             create_mac(file, token)
+    elif command == "create-files":
+        create_files()
     else:
         print("Invalid command")
         help()
