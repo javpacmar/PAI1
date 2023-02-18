@@ -12,6 +12,9 @@ def create_hash(file):
     
     file_path = search_file(file)
     
+    if file_path is None:
+        sys.exit(1)
+    
     # Open file in read mode
     with open(file_path, "r") as f:
         # Read file
@@ -30,6 +33,9 @@ def create_hash(file):
 def check_hash(file):
     
     file_path = search_file(file)
+    
+    if file_path is None:
+        sys.exit(1)
     
     # Open file in read mode
     with open(file_path, "r") as f:
@@ -55,6 +61,9 @@ def check_hash(file):
 def create_mac(file, token):
     
     file_path = search_file(file)
+    
+    if file_path is None:
+        sys.exit(1)
     
     # Challenge: Depending on the day of the week, the operation will be different
     today = datetime.datetime.today()

@@ -55,8 +55,11 @@ def search_file(filename):
     with ix.searcher() as searcher:
         results = searcher.search(query)
 
-        print(f"Found {len(results)} results:")
         for r in results:
-            print(r["path"])
-            
+            print("Found " + r["path"])
+        
+        if len(results) == 0:
+            print("File not found")
+            return None
+    
         return results[0]["path"]
