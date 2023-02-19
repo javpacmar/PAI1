@@ -3,6 +3,7 @@ import hashlib
 import sys
 
 from files import create_files, search_file
+from server import run_server
 
 def help():
     print("Usage: python main.py <command>")
@@ -119,6 +120,10 @@ if __name__ == "__main__":
             create_mac(file, token)
     elif command == "create-files":
         create_files()
+    elif command == "server":
+        run_server()
+    elif command == "help":
+        help()
     else:
         print("Invalid command")
         help()
