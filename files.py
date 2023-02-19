@@ -1,3 +1,4 @@
+import hashlib
 import os
 from whoosh.index import open_dir
 from whoosh.fields import SchemaClass, TEXT, ID
@@ -25,6 +26,13 @@ def create_files():
 
         with open(file_path, "w") as f:
             f.write(f"This is the file {i}")
+        
+        with open(file_path, "r") as f:
+            hash = hashlib.sha1(f.read().encode()).hexdigest()
+            
+            #Create hash file
+            with open(f"{file_path}.hash", "w") as f:
+                f.write(str(hash))
 
     if not os.path.exists(index_path):
         os.mkdir(index_path)

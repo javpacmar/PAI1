@@ -7,7 +7,7 @@ from server import run_server
 
 def help():
     print("Usage: python main.py <command>")
-    print("Commands: create-hash, server")
+    print("Commands: create-hash, server, create-files, check, help")
 
 def create_hash(file):
     
@@ -31,52 +31,42 @@ def create_hash(file):
         with open(f"{file_path}.hash", "w") as f:
             f.write(str(hash))
 
-def check_hash(file):
+def check_hash(file, hash):
     
-    file_path = search_file(file)
+    hash_file_path = search_file(file + ".hash")
     
-    if file_path is None:
+    if hash_file_path is None:
         sys.exit(1)
-    
-    # Open file in read mode
-    with open(file_path, "r") as f:
-        # Read file
-        data = f.read()
         
-        # Create hash with sha-1
-        hash = hashlib.sha1(data.encode()).hexdigest()
+    # Open hash file
+    with open(hash_file_path, "r") as f:
+        # Read hash file
+        hash_file = f.read()
         
-        # Open hash file
-        with open(f"{file_path}.hash", "r") as f:
-            # Read hash file
-            hash_file = f.read()
-            
-            # Compare hashes
-            if hash == hash_file:
-                print("Hashes match")
-                return True
-            else:
-                print("Hashes don't match")
-                return False
+        # Compare hashes
+        if hash == hash_file:
+            print("Hashes match")
+            return True
+        else:
+            print("Hashes don't match")
+            print(f"New hash: {hash_file}")
+            return False
             
 def create_mac(file, token):
     
-    file_path = search_file(file)
+    hash_file_path = search_file(file + ".hash")
     
-    if file_path is None:
+    if hash_file_path is None:
         sys.exit(1)
     
     # Challenge: Depending on the day of the week, the operation will be different
     today = datetime.datetime.today()
     day = today.weekday()
     
-    # Open file in read mode
-    with open(file_path, "r") as f:
-        # Read file
-        data = f.read()
-        
-        # Create hash with sha-1
-        hash = hashlib.sha1(data.encode()).hexdigest()
+    # Open hash file in read mode
+    with open(hash_file_path, "r") as f:
+        # Read hash file
+        hash = f.read()
         
         # Create mac with diferent string operations
         if day == 0:
@@ -98,7 +88,7 @@ def create_mac(file, token):
         print(f"MAC: {mac}")
         
         # Create mac file
-        with open(f"{file_path}.mac", "w") as f:
+        with open(f"{hash_file_path}.mac", "w") as f:
             f.write(str(mac))
 
 
@@ -111,12 +101,13 @@ if __name__ == "__main__":
     command = sys.argv[1]
     
     if command == "create-hash":
-        file = input("Enter file path: ")
+        file = input("Enter file name: ")
         create_hash(file)
     elif command == "check":
-        file = input("Enter file path: ")
+        file = input("Enter file name: ")
+        hash = input("Enter hash: ")
         token = input("Enter token: ")
-        if check_hash(file):
+        if check_hash(file, hash):
             create_mac(file, token)
     elif command == "create-files":
         create_files()
