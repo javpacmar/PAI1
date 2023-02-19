@@ -5,7 +5,8 @@ from whoosh.fields import SchemaClass, TEXT, ID
 from whoosh.index import create_in
 from whoosh.qparser import QueryParser
 
-folder_path = "cloud"
+cloud_folder_path = "cloud"
+local_folder_path = "local"
 index_path = "index"
 
 
@@ -16,22 +17,38 @@ class MySchema(SchemaClass):
 
 def create_files():
 
-    if not os.path.exists(folder_path):
-        os.mkdir(folder_path)
+    if not os.path.exists(cloud_folder_path):
+        os.mkdir(cloud_folder_path)
+    
+    if not os.path.exists(local_folder_path):
+        os.mkdir(local_folder_path)
 
     for i in range(1, 1001):
         filename = f"file{i}.txt"
-        file_path = os.path.join(folder_path, filename)
-        print(f"Creating file {file_path}...")
+        print(f"Creating {filename}...")
+        
+        cloud_file_path = os.path.join(cloud_folder_path, filename)      
 
-        with open(file_path, "w") as f:
+        with open(cloud_file_path, "w") as f:
             f.write(f"This is the file {i}")
         
-        with open(file_path, "r") as f:
+        with open(cloud_file_path, "r") as f:
             hash = hashlib.sha1(f.read().encode()).hexdigest()
             
             #Create hash file
-            with open(f"{file_path}.hash", "w") as f:
+            with open(f"{cloud_file_path}.hash", "w") as f:
+                f.write(str(hash))
+        
+        local_file_path = os.path.join(local_folder_path, filename)
+        
+        with open(local_file_path, "w") as f:
+            f.write(f"This is the file {i}")
+        
+        with open(local_file_path, "r") as f:
+            hash = hashlib.sha1(f.read().encode()).hexdigest()
+            
+            #Create hash file
+            with open(f"{local_file_path}.hash", "w") as f:
                 f.write(str(hash))
 
     if not os.path.exists(index_path):
@@ -42,7 +59,7 @@ def create_files():
 
     writer = ix.writer()
 
-    for subdir, dirs, files in os.walk(folder_path):
+    for subdir, dirs, files in os.walk(cloud_folder_path):
         for file in files:
             filepath = os.path.join(subdir, file)
 
@@ -50,7 +67,6 @@ def create_files():
             writer.add_document(**doc)
 
     writer.commit()
-    
 
 def search_file(filename):
 
