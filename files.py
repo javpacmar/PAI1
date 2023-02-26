@@ -4,6 +4,7 @@ from whoosh.index import open_dir
 from whoosh.fields import SchemaClass, TEXT, ID
 from whoosh.index import create_in
 from whoosh.qparser import QueryParser
+import shutil
 
 cloud_folder_path = "cloud"
 local_folder_path = "local"
@@ -15,7 +16,7 @@ class MySchema(SchemaClass):
     content = TEXT(stored=True)
 
 
-def create_files():
+def create_files(total_files):
 
     if not os.path.exists(cloud_folder_path):
         os.mkdir(cloud_folder_path)
@@ -23,7 +24,7 @@ def create_files():
     if not os.path.exists(local_folder_path):
         os.mkdir(local_folder_path)
 
-    for i in range(1, 1001):
+    for i in range(1, total_files + 1):
         filename = f"file{i}.txt"
         print(f"Creating {filename}...")
         
@@ -33,23 +34,15 @@ def create_files():
             f.write(f"This is the file {i}")
         
         with open(cloud_file_path, "r") as f:
-            hash = hashlib.sha1(f.read().encode()).hexdigest()
+            hash = hashlib.sha256(f.read().encode()).hexdigest()
             
             #Create hash file
             with open(f"{cloud_file_path}.hash", "w") as f:
                 f.write(str(hash))
-        
-        local_file_path = os.path.join(local_folder_path, filename)
-        
-        with open(local_file_path, "w") as f:
-            f.write(f"This is the file {i}")
-        
-        with open(local_file_path, "r") as f:
-            hash = hashlib.sha1(f.read().encode()).hexdigest()
-            
-            #Create hash file
-            with open(f"{local_file_path}.hash", "w") as f:
-                f.write(str(hash))
+            #Hash only in local    
+            local_hash_path = os.path.join(local_folder_path, f"{filename}.hash")
+            with open(local_hash_path, "w") as f:
+                f.write(str(hash))     
 
     if not os.path.exists(index_path):
         os.mkdir(index_path)
