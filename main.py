@@ -12,19 +12,15 @@ index_path = "index"
 
 def help():
     print("Usage: python main.py <command>")
-    print("Commands: create-hash, server, create-files, check, help")
+    print("Commands: server, create-files, check, help")
             
 def create_mac(hash, token):
-    
     
     # Challenge: Depending on the day of the week, the operation will be different
     today = datetime.datetime.today()
     day = today.weekday()
-    
-    # Open hash file in read mode
-    
         
-        # Create mac with diferent string operations (challenge)
+    # Create mac with diferent string operations (challenge)
     if day == 0:
         mac = hashlib.sha256((hash + token).encode()).hexdigest()
     elif day == 1:
