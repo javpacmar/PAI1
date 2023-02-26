@@ -1,95 +1,82 @@
 import datetime
 import hashlib
 import sys
+import os
 
 from files import create_files, search_file
 from server import run_server
 
+cloud_folder_path = "cloud"
+local_folder_path = "local"
+index_path = "index"
+
 def help():
     print("Usage: python main.py <command>")
-    print("Commands: create-hash, server, create-files, check, help")
-
-def create_hash(file):
-    
-    file_path = search_file(file)
-    
-    if file_path is None:
-        sys.exit(1)
-    
-    # Open file in read mode
-    with open(file_path, "r") as f:
-        # Read file
-        data = f.read()
-        
-        # Create hash with sha-1
-        hash = hashlib.sha1(data.encode()).hexdigest()
+    print("Commands: server, create-files, check, help")
             
-        # Print hash
-        print(f"Hash: {hash}")
-        
-        #Create hash file
-        with open(f"{file_path}.hash", "w") as f:
-            f.write(str(hash))
-
-def check_hash(file, hash):
-    
-    hash_file_path = search_file(file + ".hash")
-    
-    if hash_file_path is None:
-        sys.exit(1)
-        
-    # Open hash file
-    with open(hash_file_path, "r") as f:
-        # Read hash file
-        hash_file = f.read()
-        
-        # Compare hashes
-        if hash == hash_file:
-            print("Hashes match")
-            return True
-        else:
-            print("Hashes don't match")
-            print(f"New hash: {hash_file}")
-            return False
-            
-def create_mac(file, token):
-    
-    hash_file_path = search_file(file + ".hash")
-    
-    if hash_file_path is None:
-        sys.exit(1)
+def create_mac(hash, token):
     
     # Challenge: Depending on the day of the week, the operation will be different
     today = datetime.datetime.today()
     day = today.weekday()
+        
+    # Create mac with diferent string operations (challenge)
+    if day == 0:
+        mac = hashlib.sha256((hash + token).encode()).hexdigest()
+    elif day == 1:
+        mac = hashlib.sha256((token + hash).encode()).hexdigest()
+    elif day == 2:
+        mac = hashlib.sha256((hash + token + hash).encode()).hexdigest()
+    elif day == 3:
+        mac = hashlib.sha256((token + hash + token).encode()).hexdigest()
+    elif day == 4:
+        mac = hashlib.sha256((hash + token + hash + token).encode()).hexdigest()
+    elif day == 5:
+        mac = hashlib.sha256((token + hash + token + hash).encode()).hexdigest()
+    elif day == 6:
+        mac = hashlib.sha256((hash + token + hash + token + hash).encode()).hexdigest()
     
-    # Open hash file in read mode
-    with open(hash_file_path, "r") as f:
+    return mac
+    
+def check_mac(mac_local, mac_cloud):
+    # Compare mac
+        if mac_local == mac_cloud:
+            print("Macs match")
+            return True
+        else:
+            print("Macs don't match")
+            return False
+        
+def check(file, token):
+
+    local_hash_path = os.path.join(local_folder_path, f"{file}.hash")
+    with open(local_hash_path, "r") as f:
+        hash=f.read()  
+    
+    hash_file_path_cloud = search_file(file + ".hash")
+    
+    if hash_file_path_cloud is None:
+        sys.exit(1)
+        
+    # Open hash file
+    with open(hash_file_path_cloud, "r") as f:
         # Read hash file
-        hash = f.read()
+        hash_file_cloud = f.read()
+        # Compare hashes
+        print(f"Local hash: {hash}")
+        print(f"Cloud hash: {hash_file_cloud}")
+        if hash == hash_file_cloud:
+            print("Hashes match")
+            local_mac = create_mac(hash, token)
+            print(f"Local mac: {local_mac}")
+            cloud_mac = create_mac(hash_file_cloud, token)
+            print(f"Cloud mac: {local_mac}")
+            check_mac(local_mac, cloud_mac)
+        else:
+            print("Hashes don't match")
+            print(f"New hash: {hash_file_cloud}")
+            return False
         
-        # Create mac with diferent string operations
-        if day == 0:
-            mac = hashlib.sha1((hash + token).encode()).hexdigest()
-        elif day == 1:
-            mac = hashlib.sha1((token + hash).encode()).hexdigest()
-        elif day == 2:
-            mac = hashlib.sha1((hash + token + hash).encode()).hexdigest()
-        elif day == 3:
-            mac = hashlib.sha1((token + hash + token).encode()).hexdigest()
-        elif day == 4:
-            mac = hashlib.sha1((hash + token + hash + token).encode()).hexdigest()
-        elif day == 5:
-            mac = hashlib.sha1((token + hash + token + hash).encode()).hexdigest()
-        elif day == 6:
-            mac = hashlib.sha1((hash + token + hash + token + hash).encode()).hexdigest()
-        
-        # Print mac
-        print(f"MAC: {mac}")
-        
-        # Create mac file
-        with open(f"{hash_file_path}.mac", "w") as f:
-            f.write(str(mac))
 
 
 if __name__ == "__main__":
@@ -100,17 +87,13 @@ if __name__ == "__main__":
     
     command = sys.argv[1]
     
-    if command == "create-hash":
+    if command == "check":
         file = input("Enter file name: ")
-        create_hash(file)
-    elif command == "check":
-        file = input("Enter file name: ")
-        hash = input("Enter hash: ")
         token = input("Enter token: ")
-        if check_hash(file, hash):
-            create_mac(file, token)
+        check(file, token)
     elif command == "create-files":
-        create_files()
+        total_files = input("Enter files number to create: ")
+        create_files(int(total_files))
     elif command == "server":
         run_server()
     elif command == "help":
